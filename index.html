@@ -391,7 +391,7 @@
 
             contentDiv.innerHTML = `
                 <div class="text-center space-y-6">
-                    <h2 class="text-3xl font-bold text-yellow-500 text-shadow-custom">黑色追緝令：賭場風雲</h2>
+                    <!-- 移除冗餘的 H2 標題 -->
                     <p class="text-lg text-gray-300">一場秘密行動即將展開...</p>
                     
                     <!-- 初始圖片：cover.jpg -->
@@ -427,7 +427,7 @@
             
             const confirmButton = document.createElement('button');
             confirmButton.id = 'confirm-boss-button';
-            confirmButton.textContent = "我的老大是這個";
+            confirmButton.textContent = "我的老大是他/她"; // <-- 已修改按鈕文字
             confirmButton.disabled = true; // 預設禁用
             confirmButton.className = 'gold-button bg-gray-500 cursor-not-allowed text-white px-6 py-3 rounded-lg w-full mt-6 transition-all duration-200';
             
@@ -507,7 +507,7 @@
             };
 
             // 渲染輸入框和按鈕
-            renderInput("請輸入你的黑幫代號 (2-10字元)", "確認代號", submitName, 'codename-input', 10);
+            renderInput("請輸入你的黑幫化名（2-10個字）", "確認代號", submitName, 'codename-input', 10); // <-- 已修改輸入框提示文字
             document.getElementById('codename-input').focus();
         }
 
