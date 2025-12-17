@@ -162,9 +162,13 @@
         let currentDialogueStep = 0; 
         const DIALOGUE_STEPS = (name) => [
             { speaker: 'BOSS', text: `<span class="text-red-400">${name}</span>你來啦⋯⋯`, buttonText: "繼續" },
-            { speaker: 'PLAYER', text: `老大！`, buttonText: "繼續" },
+            { speaker: 'PLAYER', text: `老大！有何吩咐？`, buttonText: "繼續" },
             { speaker: 'BOSS', text: `你被邀請到這場由黑幫舉辦的賭場宴會，表面上是來一擲千金的客人，但你真正的目標是賭場後面的那座<span class="text-yellow-500 font-bold">金庫</span>！`, buttonText: "繼續" },
-            { speaker: 'BOSS', text: `今天很多其他黑幫成員也是打著跟你一樣的主意，你必須爭分奪秒，盡快把金庫打開，不然裡面的金幣會被其他人捷足先登！`, buttonText: "繼續" },
+            { 
+                speaker: 'BOSS', 
+                text: `今天很多其他黑幫成員也是打著跟你一樣的主意，你必須爭分奪秒，盡快把金庫打開，<span class="text-yellow-400 font-bold">不然裡面的金幣會被其他人捷足先登！</span>`, 
+                buttonText: "繼續" 
+            },
             {
                 speaker: 'BOSS',
                 text: `現在，你趁保鏢在打瞌睡，已經偷偷潛入到了賭場的金庫位置。<br>噓！小心不要被發現！<br><span class="text-yellow-400 font-bold">十分鐘內</span>你必須解出這個謎題，不然換班的人就要來了，你會被抓個正著！<br>仔細查看金庫在哪裡？還有密碼，你需要知道密碼是幾位數。`,
@@ -260,11 +264,12 @@
             controlsDiv.innerHTML = '';
         }
 
-        function renderButton(text, onClick, isFinalStep = false) {
+        function renderButton(text, onClick, isFinalStep = false, id = null) {
             const button = document.createElement('button');
             button.textContent = text;
             button.className = 'gold-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-6 py-3 rounded-lg w-full';
             button.onclick = onClick;
+            if (id) button.id = id;
             controlsDiv.appendChild(button);
         }
 
@@ -395,7 +400,10 @@
         }
 
         
-        /** 前置階段: 初始圖片畫面 */
+        /**
+         * 前置階段: 初始圖片畫面
+         * 新增：勾選框驗證邏輯
+         */
         function goToInitialImageScreen() {
             clearScreen();
             stopTimer(); 
@@ -417,9 +425,60 @@
                     >
                 </div>
             `;
+            
+            // --- 勾選框區域 ---
+            const checkboxArea = document.createElement('div');
+            checkboxArea.className = 'mt-6 space-y-3 text-left text-gray-200';
+            checkboxArea.innerHTML = `
+                <label class="flex items-center space-x-3 cursor-pointer">
+                    <input type="checkbox" id="check-network" class="form-checkbox h-5 w-5 text-yellow-500 bg-gray-700 border-gray-500 rounded focus:ring-0">
+                    <span>請確保網路穩定</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer">
+                    <input type="checkbox" id="check-volume" class="form-checkbox h-5 w-5 text-yellow-500 bg-gray-700 border-gray-500 rounded focus:ring-0">
+                    <span>請打開遊戲音量</span>
+                </label>
+            `;
+            controlsDiv.appendChild(checkboxArea);
 
-            // 點擊後進入選擇老大頁面
-            renderButton("進入秘密任務", goToBossSelection);
+            // --- 按鈕 ---
+            const initialButton = document.createElement('button');
+            initialButton.id = 'initial-start-button';
+            initialButton.textContent = "進入秘密任務";
+            initialButton.disabled = true; // 預設禁用
+            initialButton.className = 'gold-button bg-gray-500 cursor-not-allowed text-white px-6 py-3 rounded-lg w-full mt-6 transition-all duration-200';
+            controlsDiv.appendChild(initialButton);
+
+            // --- 檢查函數 ---
+            function checkPreconditions() {
+                const networkChecked = document.getElementById('check-network').checked;
+                const volumeChecked = document.getElementById('check-volume').checked;
+
+                const isReady = networkChecked && volumeChecked;
+                initialButton.disabled = !isReady;
+
+                if (isReady) {
+                    initialButton.classList.remove('bg-gray-500', 'cursor-not-allowed');
+                    initialButton.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+                    messageArea.classList.add('hidden');
+                } else {
+                    initialButton.classList.add('bg-gray-500', 'cursor-not-allowed');
+                    initialButton.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
+                }
+            }
+
+            // --- 監聽勾選框 ---
+            document.getElementById('check-network').addEventListener('change', checkPreconditions);
+            document.getElementById('check-volume').addEventListener('change', checkPreconditions);
+
+            // --- 處理按鈕點擊 (即使被禁用也需要檢查) ---
+            initialButton.onclick = () => {
+                if (!initialButton.disabled) {
+                    goToBossSelection();
+                } else {
+                    showMessage("請確保上方兩項皆已確認", true);
+                }
+            };
         }
 
         /** 新增：老大選擇頁面 */
@@ -624,7 +683,9 @@
                 <p>金庫密碼每天都會換，但你事前已經調查過，賭場主人記性很差，<strong>相關的提示一定就在金庫附近</strong>。</p>
                 <hr class="my-4 border-gray-600">
                 <p class="text-yellow-400"><strong>【行動指示：第二步】</strong></p>
-                <p>環顧四周，尋找周邊貼著或寫著的文字資訊，什麼東西看起來像是在提供密碼線索？</p>
+                <!-- --- 修改點 3: 提示文字 --- -->
+                <p>環顧四周，尋找周邊物品，什麼東西看起來像是在提供密碼的線索？</p>
+                <!-- --- 修改點 3 結束 --- -->
             `;
 
             renderInput("請輸入你發現的線索名稱 (例如：紙條、便籤)", "確認線索", checkClue, 'clue-input');
@@ -696,7 +757,7 @@
             input.id = 'code-input';
             input.type = 'number';
             input.maxLength = 3;
-            input.placeholder = "請輸入三位數密碼";
+            input.placeholder = "每輸錯一次扣除30秒";
             input.className = 'p-3 rounded-lg bg-gray-700 text-white border-2 border-yellow-500 focus:outline-none focus:border-yellow-400 w-full';
             
             const button = document.createElement('button');
@@ -731,7 +792,19 @@
                     setTimeout(goToSuccess, 2000); 
                 }
             } else {
-                showMessage("密碼錯誤！鎖定機制正在啟動... 再試一次，不然警報就要響了！", true);
+                // *** 密碼錯誤時扣除 30 秒 ***
+                const timeDeduction = 30;
+                
+                if (timeLeft - timeDeduction <= 0) {
+                    timeLeft = 0; 
+                    stopTimer(); // 確保計時器已停止
+                    showMessage(`密碼錯誤！鎖定機制正在啟動... 時間已用盡！`, true);
+                    updateTimer();
+                } else {
+                    timeLeft -= timeDeduction;
+                    showMessage(`密碼錯誤！鎖定機制正在啟動... 小心謹慎！不然警報就要響了！`, true);
+                    updateTimer(); // 更新計時器顯示
+                }
             }
         }
 
