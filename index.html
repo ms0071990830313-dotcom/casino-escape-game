@@ -132,9 +132,11 @@
 
         let currentState = GAME_STATE.START;
         
-        // *** 全域變數：玩家名稱和老大選擇 ***
+        // *** 全域變數：玩家名稱、老大選擇、時間記錄 ***
         let playerName = "";
         let selectedBossId = null; 
+        let missionStartTime = 0; // 任務開始時間 (Date.now())
+        let completionTime = 0;   // 最終通關時間 (秒)
 
         // 密碼提示相關
         let hintsRevealed = 0; 
@@ -366,6 +368,8 @@
                 // 3. 渲染按鈕
                 const buttonAction = () => {
                     if (step.action === 'START_MISSION') {
+                        // 記錄任務開始的精確時間
+                        missionStartTime = Date.now(); 
                         startTimer(); 
                         goToVaultLocate(); 
                     } else {
@@ -660,7 +664,7 @@
                 </h3>
                 <p class="text-sm text-red-300 mb-3">時間歸零仍可打開金庫，但是可能會發生⋯⋯</p>
                 <div id="hint-messages" class="space-y-2">
-                    <!-- 提示訊息將在這裡動態顯示 -->
+                    <!-- 提示訊息將在此處動態顯示 -->
                 </div>
             `;
             
@@ -707,6 +711,9 @@
             if (normalizedInput === CORRECT_CODE) {
                 showMessage("密碼正確！金庫鎖正在解開...", false);
                 
+                // 計算通關時間 (秒)
+                completionTime = Math.floor((Date.now() - missionStartTime) / 1000); 
+
                 if (timeLeft <= 0) {
                     setTimeout(goToLateSuccess, 2000); 
                 } else {
@@ -730,10 +737,15 @@
             
             contentDiv.innerHTML = `
                 <div class="text-center">
-                    <!-- 圖片佔位符：請將 src 替換為您的金幣圖 URL -->
-                    <img src="YOUR_IMAGE_FILENAME.png" 
-                         onerror="this.onerror=null; this.src='https://placehold.co/150x150/FFD700/000?text=金幣圖片';"
-                         alt="金幣圖片" 
+                    <!-- 顯示代號與時間 -->
+                    <p class="text-xl font-bold mb-4">
+                        代號: <span class="text-red-600">${playerName}</span> | 耗時: <span class="text-red-600">${completionTime} 秒</span>
+                    </p>
+
+                    <!-- 圖片佔位符：金幣成功圖 -->
+                    <img src="SUCCESS_IMAGE.png" 
+                         onerror="this.onerror=null; this.src='https://placehold.co/150x150/FFD700/000?text=金幣成功圖';"
+                         alt="金幣成功圖" 
                          class="mx-auto h-24 w-24 object-contain mb-4 rounded-full shadow-lg border-4 border-yellow-600"
                     >
                     <h2 class="text-4xl md:text-5xl font-extrabold text-yellow-700 mt-4 animate-bounce">
@@ -763,10 +775,15 @@
             
             contentDiv.innerHTML = `
                 <div class="text-center">
-                     <!-- 圖片佔位符：請將 src 替換為您的金幣圖 URL -->
-                    <img src="YOUR_IMAGE_FILENAME.png" 
-                         onerror="this.onerror=null; this.src='https://placehold.co/150x150/FFD700/000?text=金幣圖片';"
-                         alt="金幣圖片" 
+                    <!-- 顯示代號與時間 -->
+                    <p class="text-xl font-bold mb-4">
+                        代號: <span class="text-red-600">${playerName}</span> | 耗時: <span class="text-red-600">${completionTime} 秒</span>
+                    </p>
+                    
+                    <!-- 圖片佔位符：金幣 B 圖 -->
+                    <img src="LATE_IMAGE.png" 
+                         onerror="this.onerror=null; this.src='https://placehold.co/150x150/FFD700/000?text=金幣B圖';"
+                         alt="金幣B圖" 
                          class="mx-auto h-24 w-24 object-contain mb-4 rounded-full shadow-lg border-4 border-yellow-600"
                     >
                     <h2 class="text-4xl md:text-5xl font-extrabold text-yellow-700 mt-4 animate-bounce">
