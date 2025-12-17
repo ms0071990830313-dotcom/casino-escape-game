@@ -83,6 +83,15 @@
         您的瀏覽器不支持音頻播放。
     </audio>
 
+    <!-- 成功音效 -->
+    <audio id="success-sound">
+        <source src="SUCCESS_Sound.mp4" type="audio/mp4">
+    </audio>
+    <!-- 遲來成功音效 -->
+    <audio id="late-sound">
+        <source src="LATE_sound.mp4" type="audio/mp4">
+    </audio>
+
     <!-- 主遊戲容器 -->
     <div id="game-container" class="bg-gray-800 text-white p-6 md:p-10 rounded-xl shadow-2xl max-w-lg w-full transition-all duration-500">
         
@@ -171,6 +180,8 @@
         const messageArea = document.getElementById('message-area');
         const timerDisplay = document.getElementById('timer-display');
         const bgm = document.getElementById('bgm'); // 獲取音頻元素
+        const successSound = document.getElementById('success-sound'); // 獲取成功音效元素
+        const lateSound = document.getElementById('late-sound');     // 獲取遲來音效元素
 
 
         // --- 音樂播放邏輯 (略) ---
@@ -727,6 +738,11 @@
         /** 階段 4a: 正常成功畫面 (時間內完成) */
         function goToSuccess() {
             currentState = GAME_STATE.SUCCESS;
+            
+            // 停止 BGM 並播放成功音效
+            bgm.pause();
+            successSound.play().catch(error => console.log("Success sound playback failed:", error));
+
             stopTimer();
             timerDisplay.classList.add('hidden');
             clearScreen();
@@ -765,6 +781,11 @@
         /** 階段 4b: 遲來成功畫面 (時間歸零後才完成) */
         function goToLateSuccess() {
             currentState = GAME_STATE.SUCCESS; // 仍視為成功狀態
+
+            // 停止 BGM 並播放遲來音效
+            bgm.pause();
+            lateSound.play().catch(error => console.log("Late sound playback failed:", error));
+            
             stopTimer();
             timerDisplay.classList.add('hidden'); 
             clearScreen();
